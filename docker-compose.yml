@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  mysql:
+    build: ./mysql
+    container_name: mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: my_database
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d # 初期化SQLのマウント
+
+  golang:
+    build: ./golang
+    container_name: go_container
+    depends_on:
+      - mysql
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=user_password
+      - MYSQL_DB=my_database
+    volumes:
+      - ./golang/src:/app/src
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:
